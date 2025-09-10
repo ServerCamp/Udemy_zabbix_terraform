@@ -115,10 +115,10 @@ resource "aws_security_group" "education_zabbix_sg" {
 #インスタンス作成
 ## webサーバ
 resource "aws_instance" "my_web_server" {
-  ami                    = var.web_ami_id
+  ami                    = data.aws_ami.web_latest.id
   instance_type          = "t3.micro"
   key_name               = aws_key_pair.key_pair.key_name
-  subnet_id              = aws_subnet.my_subnet_1a.id
+  subnet_id              = aws_subnet.my_pub_subnet_1a.id
   vpc_security_group_ids = [aws_security_group.education_web_sg.id]
   tags = {
     Name = "${var.name}-${var.environment}-web01"
@@ -127,10 +127,10 @@ resource "aws_instance" "my_web_server" {
 
 ## Zabbixサーバ
 resource "aws_instance" "my_zabbix_server" {
-  ami                    = var.zabbix_ami_id
+  ami                    = data.aws_ami.zabbix_latest.id
   instance_type          = "t3.micro"
   key_name               = aws_key_pair.key_pair.key_name
-  subnet_id              = aws_subnet.my_subnet_1a.id
+  subnet_id              = aws_subnet.my_pub_subnet_1a.id
   vpc_security_group_ids = [aws_security_group.education_zabbix_sg.id]
   tags = {
     Name = "${var.name}-${var.environment}-zabbix-server01"
@@ -139,16 +139,27 @@ resource "aws_instance" "my_zabbix_server" {
 
 # Webサーバ用 EIP
 resource "aws_eip" "web_eip" {
-  instance = aws_instance.my_web_server.id
   tags = {
     Name = "${var.name}-${var.environment}-web01-eip"
   }
 }
 
+# WebサーバにEIPを関連付け
+resource "aws_eip_association" "web_eip_assoc" {
+  instance_id   = aws_instance.my_web_server.id
+  allocation_id = aws_eip.web_eip.id
+}
+
+
 # Zabbixサーバ用 EIP
 resource "aws_eip" "zabbix_eip" {
-  instance = aws_instance.my_zabbix_server.id
   tags = {
     Name = "${var.name}-${var.environment}-zabbix-server01-eip"
   }
+}
+
+# ZabbixサーバにEIPを関連付け
+resource "aws_eip_association" "zabbix_eip_assoc" {
+  instance_id   = aws_instance.my_zabbix_server.id
+  allocation_id = aws_eip.zabbix_eip.id
 }

@@ -25,15 +25,3 @@ variable "domain" {
   description = "ドメイン名"
   default     = "example.com"
 }
-
-#Web AMI ID
-variable "web_ami_id" {
-  description = "webインスタンスのAMI ID"
-  type        = string
-}
-
-#Zabbix AMI ID
-variable "zabbix_ami_id" {
-  description = "zabbixインスタンスのAMI ID"
-  type        = string
-}

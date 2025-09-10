@@ -1,38 +1,46 @@
 # Udemy_zabbix_terraform
-=======
-# Terraform AWS Education Project
 
 ## 概要
-このプロジェクトは、Terraformを使用してAWSリソースを構築する教育用のサンプルです。  
+このプロジェクトは、Zabbix の Udemy 講座にて手順を簡略化するために、Terraform を使用して AWS リソースを構築するサンプルです。  
+
 以下のリソースを作成します：
 - VPC
 - サブネット
 - インターネットゲートウェイ
 - ルートテーブルとその関連付け
-- EC2インスタンス
+- EC2 インスタンス (Web, Zabbix)
 - セキュリティグループ
-- SSHキーの生成
+- Elastic IP (EIP)
+- SSH キーの生成
+
+---
 
 ## 構成図
-![image](https://github.com/user-attachments/assets/2c703f19-a485-4690-a69c-765da675aed6)
+※ここに構成図を挿入してください（例: PNG / PlantUML / draw.ioなど）
 
+---
 
 ## フォルダ構成
 ```
 .
-├── .gitignore                # Gitで無視するファイルの設定
-├── .terraform.lock.hcl       # Terraformのプロバイダーのロックファイル
-├── ec2.tf                    # EC2インスタンスと関連リソースの定義
-├── provider.tf               # プロバイダーの設定
-├── terraform.tfvars.example  # 変数の例ファイル
-├── variables.tf              # 変数の定義
-└── vpc.tf                    # VPCとネットワーク関連リソースの定義
+├── .gitignore               # Gitで無視するファイルの設定
+├── ami.tf                   # AMIを自動取得するData Source
+├── ec2.tf                   # EC2インスタンス、SG、EIPなど
+├── provider.tf              # プロバイダーの設定
+├── terraform.tfvars.example # 変数のサンプルファイル
+├── variables.tf             # 変数の定義
+├── versions.tf              # Terraform/Providerのバージョン固定
+└── vpc.tf                   # VPCとネットワーク関連リソースの定義
 ```
 
+---
+
 ## 必要条件
-- Terraform 1.6以上
-- AWSアカウント認証を登録済みであること
-- AWS CLIが設定済みであること
+- Terraform **1.13.x**以上
+- AWS アカウント認証が設定済み (`aws configure`)
+- AWS CLI が使用可能であること
+
+---
 
 ## 使用方法
 
@@ -43,56 +51,57 @@ cd terraform-aws-education
 ```
 
 ### 2. 変数ファイルを作成
-`terraform.tfvars.example` をコピー、またはリネームして `terraform.tfvars` を作成し、必要な値を設定します。
+サンプルファイルをコピーして編集してください。
 ```bash
 cp terraform.tfvars.example terraform.tfvars
-mv terraform.tfvars.example terraform.tfvars
+```
+編集箇所
+```bash
+name    = "example"
+domain  = "example.com"
 ```
 
-### 3. Terraformの初期化
-Terraformのプロバイダーをインストールします。
+### 3. 初期化
 ```bash
 terraform init
 ```
 
 ### 4. 設定の確認
-作成されるリソースを確認します。
 ```bash
 terraform plan
 ```
 
+
 ### 5. リソースの作成
-AWS上にリソースを作成します。
 ```bash
-terraform apply
+terraform apply -auto-approve
 ```
 
 ### 6. リソースの削除
-作成したリソースを削除する場合は以下を実行します。
 ```bash
-terraform destroy
+terraform destroy -auto-approve
 ```
 
 ## 主なファイルの説明
 
-### `vpc.tf`
-- VPC、サブネット、インターネットゲートウェイ、ルートテーブルを定義しています。
+ami.tf
+公開している最新の AMI を自動で取得します。
 
-### `ec2.tf`
-- EC2インスタンス、SSHキー、セキュリティグループを定義しています。
-- `http`プロバイダーを使用して現在のIPアドレスを取得し、SSHアクセスを制限しています。
+ec2.tf
+EC2 インスタンス、Elastic IP、セキュリティグループを定義。
+http プロバイダーを使って 自分のグローバルIPのみ に SSH/HTTP/HTTPS を許可しています。
+→ Zabbix UI (80/443) も自分のIPからのみアクセス可能です。
 
-### `variables.tf`
-- リージョン、名前、環境名などの変数を定義しています。
+vpc.tf
+VPC、サブネット、IGW、ルートテーブルを定義しています。
 
-### `provider.tf`
-- AWSプロバイダーとHTTPプロバイダーの設定を行っています。
+versions.tf
+Terraform と Provider のバージョンを固定しています。
 
-## 注意事項
-- 実行前にAWSアカウントの料金体系を確認してください。
+**注意事項**
 
-## ライセンス
-このプロジェクトはMITライセンスのもとで公開されています。
+セキュリティのため、Zabbix UI / Web サーバ (80, 443) は自分のIPからのみアクセス可能です。
+他の場所からアクセスしたい場合は ec2.tf のセキュリティグループ設定を修正してください。
 
-## 貢献
-バグ報告や機能提案は歓迎します！プルリクエストを送る際は、事前にIssueを作成してください。
+AWS 上での利用には課金が発生します。作成したリソースは講座受講後削除するように気を付けてください。
+
