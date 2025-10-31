@@ -120,6 +120,17 @@ resource "aws_instance" "my_web_server" {
   key_name               = aws_key_pair.key_pair.key_name
   subnet_id              = aws_subnet.my_pub_subnet_1a.id
   vpc_security_group_ids = [aws_security_group.education_web_sg.id]
+
+  user_data = templatefile("${path.module}/templates/setup_wordpress.sh.tpl", {
+    user_name        = var.wordpress_config.user_name
+    domain_name      = var.wordpress_config.domain_name
+    server_admin     = var.wordpress_config.server_admin
+    db_name          = var.wordpress_config.db_name
+    db_user          = var.wordpress_config.db_user
+    db_password      = random_password.wordpress_db.result
+    db_root_password = random_password.wordpress_db_root.result
+  })
+
   tags = {
     Name = "${var.name}-${var.environment}-web01"
   }
